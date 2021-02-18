@@ -87,68 +87,73 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
   }
 
   void _submit() async {
-    try {
-      final auth = Provider.of<AuthBase>(context);
-      if (_formType == EmailSignInFormType.signIn) {
-        authResult = await auth.signInWithEmailAndPassword(_email, _password);
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => LandingPage()));
-        print('HomePage called 1');
-      } else {
-        authResult = await auth.createUserWithEmailAndPassword(_email, _password);
-        sendverification();
-      }
+    for(var i=0;i<emails.length;i++){
+      if(_email== emails[i][0]){
+        try {
+          final auth = Provider.of<AuthBase>(context);
+          if (_formType == EmailSignInFormType.signIn) {
+            authResult = await auth.signInWithEmailAndPassword(_email, _password);
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => LandingPage()));
+            print('HomePage called 1');
+          }
+          if(_formType == EmailSignInFormType.register){
+            authResult = await auth.createUserWithEmailAndPassword(_email, _password);
+            sendverification();
+          }
 
-    } catch (e) {
-      print(e.toString());
-      if (e is PlatformException) {
-        if (e.code == 'ERROR_EMAIL_ALREADY_IN_USE') {
-          hello = e.code;
-          print(hello);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                  'This Email is already registered \n Please go back '),
-            ),
-          );
-        }
-        if (e.code == 'ERROR_WRONG_PASSWORD') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Wrong password'),
-            ),
-          );
-        }
-        if (e.code == 'ERROR_WRONG_PASSWORD') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Wrong password!!!'),
-            ),
-          );
-        }
-        if (e.code == 'ERROR_USER_NOT_FOUND') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('No user found!!!'),
-            ),
-          );
+        } catch (e) {
+          print(e.toString());
+          if (e is PlatformException) {
+            if (e.code == 'ERROR_EMAIL_ALREADY_IN_USE') {
+              hello = e.code;
+              print(hello);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text(
+                      'This Email is already registered \n Please go back '),
+                ),
+              );
+            }
+            if (e.code == 'ERROR_WRONG_PASSWORD') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Wrong password'),
+                ),
+              );
+            }
+            if (e.code == 'ERROR_WRONG_PASSWORD') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Wrong password!!!'),
+                ),
+              );
+            }
+            if (e.code == 'ERROR_USER_NOT_FOUND') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('No user found!!!'),
+                ),
+              );
+            }
+          }
         }
       }
     }
+
+
   }
 
   void _collectmails() async {
-    await firestoreInstance
-        .collection("Emails")
-        .getDocuments()
-        .then((querySnapshot) {
+    await firestoreInstance.collection("Emails").getDocuments().then((querySnapshot) {
       querySnapshot.documents.forEach((result) {
         Map<String, dynamic> value = result.data;
-        print(value.values);
-        emails.add(value.values);
+        emails.add(value.values.toList());
       });
       print('collected emails successfully');
       print(emails.length);
+      print(emails[0][0].trim());
+      print(emails);
     });
   }
 
