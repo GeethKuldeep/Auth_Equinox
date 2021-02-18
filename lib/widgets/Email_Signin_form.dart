@@ -72,8 +72,6 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
       }
     });
 
-
-
   }
 
   void verify() async {

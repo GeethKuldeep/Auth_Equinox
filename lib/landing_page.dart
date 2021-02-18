@@ -15,10 +15,12 @@ class LandingPage extends StatefulWidget {
 }
 
 class _LandingPageState extends State<LandingPage> {
-  final auth =FirebaseAuth.instance;
+  final auth1 =FirebaseAuth.instance;
   FirebaseUser user1;
   void authCurrentUser()async{
-    user1 = await auth.currentUser();
+    setState(() async{
+      user1 = await auth1.currentUser();
+    });
   }
   @override
   void initState() {
@@ -34,12 +36,14 @@ class _LandingPageState extends State<LandingPage> {
         stream: auth.onAuthStateChanged,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.active) {
-
             User user = snapshot.data;
             if (user != null ) {
-              if(user1.isEmailVerified == true){
-                print('HomePage called 2');
-                return HomePage();
+              if(user1 != null){
+                user1.reload();
+                if( user1.isEmailVerified == true){
+                  print('HomePage called 2');
+                  return HomePage();
+                }
               }
 
             }
