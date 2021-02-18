@@ -49,6 +49,12 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
   void sendverification() async {
     await user.sendEmailVerification();
     print('email sent');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+            'Verification link has been sent \n Please verify to continue '),
+      ),
+    );
     timer = Timer.periodic(Duration(seconds: 3), (timer) async {
       verify();
       if (verified == true) {
@@ -63,6 +69,7 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
           Navigator.of(context)
               .pushReplacement(MaterialPageRoute(builder: (context) => LandingPage()));
         }
+
       } else {
         print("Email is not verified");
       }
