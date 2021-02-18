@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sigin/services/authentication.dart';
 import 'package:provider/provider.dart';
 import '../landing_page.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum EmailSignInFormType { signIn, register }
@@ -29,7 +28,6 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
   String get _password => _passwordController.text;
   EmailSignInFormType _formType = EmailSignInFormType.signIn;
   final firestoreInstance = Firestore.instance;
-  User authResult;
   var color1 = const Color(0xffFBD00D);
   bool _passwordVisible;
   final snackBar = SnackBar(content: Text('Email is already registered'));
@@ -38,16 +36,15 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
   List emails = [];
   String formatted;
   final auth = FirebaseAuth.instance;
-  FirebaseUser user;
   Timer timer;
   bool verified = false;
+  AuthResult authResult;
+  FirebaseUser newuser;
 
-  void authCurrentUser() async {
-    user = await auth.currentUser();
-  }
+
 
   void sendverification() async {
-    await user.sendEmailVerification();
+    await authResult.user.sendEmailVerification();
     print('email sent');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -56,12 +53,12 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
       ),
     );
     timer = Timer.periodic(Duration(seconds: 3), (timer) async {
-      verify();
+      await verify();
       if (verified == true) {
-        if (authResult.uid != null) {
+        if (authResult.user.uid != null) {
           await firestoreInstance
               .collection('users')
-              .document(authResult.uid)
+              .document(authResult.user.uid)
               .setData({
             'username': _Username,
             'email': _email,
@@ -80,11 +77,15 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
   }
 
   void verify() async {
-    final currentuser =await auth.currentUser();
-    await currentuser.reload();
+    print(authResult.user.isEmailVerified);
+    print(authResult.user);
+    newuser = await auth.currentUser();
+    print(newuser);
+    await newuser.reload();
+    print(newuser.isEmailVerified);
     print('checking');
-   if(await currentuser!=null){
-     if ((await currentuser.isEmailVerified) == true) {
+   if( newuser.isEmailVerified!=null){
+     if ((await newuser.isEmailVerified) == true) {
        setState(() {
          verified = true;
          print('verified = true');
@@ -97,15 +98,16 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
     for(var i=0;i<emails.length;i++){
       if(_email== emails[i][0]){
         try {
-          final auth = Provider.of<AuthBase>(context);
           if (_formType == EmailSignInFormType.signIn) {
-            authResult = await auth.signInWithEmailAndPassword(_email, _password);
+             authResult = await auth.signInWithEmailAndPassword(email: _email, password: _password);
+            print(authResult);
             Navigator.of(context)
                 .push(MaterialPageRoute(builder: (context) => LandingPage()));
             print('HomePage called 1');
           }
           if(_formType == EmailSignInFormType.register){
-            authResult = await auth.createUserWithEmailAndPassword(_email, _password);
+             authResult = await auth.createUserWithEmailAndPassword(email:_email,password: _password);
+            print(authResult);
             sendverification();
           }
 
@@ -166,7 +168,6 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
 
   @override
   void initState() {
-    authCurrentUser();
     _collectmails();
     _passwordVisible = false;
   }

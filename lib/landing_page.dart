@@ -36,9 +36,12 @@ class _LandingPageState extends State<LandingPage> {
           if (snapshot.connectionState == ConnectionState.active) {
 
             User user = snapshot.data;
-            if (user != null && user1.isEmailVerified == true) {
-              print('HomePage called 2');
-              return HomePage();
+            if (user != null ) {
+              if(user1.isEmailVerified == true){
+                print('HomePage called 2');
+                return HomePage();
+              }
+
             }
             return EmailSigninPage();
           }
